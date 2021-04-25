@@ -38,6 +38,7 @@ import de.Keyle.MyPet.api.entity.MyPetBukkitEntity;
 import de.Keyle.MyPet.api.entity.MyPetType;
 import de.Keyle.MyPet.api.player.MyPetPlayer;
 import de.Keyle.MyPet.api.plugin.MyPetPlugin;
+import de.Keyle.MyPet.api.repository.PlayerManager;
 import de.Keyle.MyPet.api.skill.Skills;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -67,7 +68,6 @@ public class MyPetExtension implements DataExtension {
     @DataBuilderProvider
     public ExtensionDataBuilder playerData(UUID playerUUID) {
         MyPetPlayer player = getMyPetPlayer(playerUUID);
-        if (player == null) throw new NotReadyException();
 
         boolean hasPet = player.hasMyPet();
         MyPet pet = player.getMyPet();
@@ -112,7 +112,13 @@ public class MyPetExtension implements DataExtension {
 
     private MyPetPlayer getMyPetPlayer(UUID playerUUID) {
         Player player = Bukkit.getPlayer(playerUUID);
-        if (player == null) return null;
-        return myPet.getPlayerManager().getMyPetPlayer(player);
+        if (player == null) throw new NotReadyException(); // Player not present
+
+        PlayerManager manager = myPet.getPlayerManager();
+        if (manager == null) throw new NotReadyException(); // Plugin not enabled
+
+        MyPetPlayer myPetPlayer = manager.getMyPetPlayer(player);
+        if (myPetPlayer == null) throw new NotReadyException(); // No MyPet Data
+        return myPetPlayer;
     }
 }
